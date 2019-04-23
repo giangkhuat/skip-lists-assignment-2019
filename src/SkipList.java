@@ -19,6 +19,7 @@ public class SkipList<K, V> implements SimpleMap<K, V> {
    */
   static final int INITIAL_HEIGHT = 16;
 
+
   // +---------------+-----------------------------------------------
   // | Static Fields |
   // +---------------+
@@ -78,7 +79,11 @@ public class SkipList<K, V> implements SimpleMap<K, V> {
     this((k1, k2) -> k1.toString().compareTo(k2.toString()));
   } // SkipList()
 
-
+  public void resizeUpdate(ArrayList<SLNode<K, V>> update, int size) {
+    for (int i = 0; i < size; i++) {
+      update.add(null);
+    } // for
+  }
   // +-------------------+-------------------------------------------
   // | SimpleMap methods |
   // +-------------------+
@@ -86,33 +91,76 @@ public class SkipList<K, V> implements SimpleMap<K, V> {
   @Override
   public V set(K key, V value) {
     // update is an arary of pointers
-    ArrayList<SLNode<K, V>> update = new ArrayList<SLNode<K, V>>(INITIAL_HEIGHT);
+    ArrayList<SLNode<K, V>> update = new ArrayList<SLNode<K, V>>(this.height);
+    // put something in update
+    resizeUpdate(update, this.height);
+    
+    /*
+    for (int i = 0; i < this.height; i++) {
+      update.add(null);
+    } // for
+    */
+    // update = (ArrayList<SLNode<K,V>>) this.front.clone();
     // current node points to header
+    
     SLNode<K, V> listHeader = this.front.get(this.height - 1);
-    SLNode<K,V> current = listHeader;
-    for (int i = this.height; i >= 0; i--) {
-      while (this.comparator.compare(current.next.get(i).key, key) < 0 && current.next.get(i) != null) {
-        current = current.next.get(i);
-        
-      } 
-      update.add(current);
-    }
-    // current is now pointing to the element before the position we are about to set
-    // at bottoom level.
-    current = current.next.get(0);
-    if (this.comparator.compare(current.key, key) == 0) {
-      V val = current.value;
-      current.value = value;
-      // return previous value of node
-      return val;
-    } else {
+    SLNode<K, V> current = listHeader;
+
+    // check if current is null ( list is empty)
+    if (current == null) {
       int newHeight = randomHeight();
-      if (newHeight > this.height) {
-        for (int i = this.height ; i <= newHeight; i++) {
-          
+      current = new SLNode(key, value, newHeight);
+      for (int i = this.height; i < newHeight; i++) {
+        this.front.add(i, current);
+      }
+      for (int i = 0; i < this.height; i++) {
+        this.front.set(i, current);
+      }
+      this.height = newHeight;
+      this.size++;
+    } else { // list is not empty
+      for (int i = this.height - 1; i >= 0; i--) {
+        // we add condition if current.next.get)i != null to not assume it has a next
+        while (current.next.get(i) != null
+            && this.comparator.compare(current.next.get(i).key, key) < 0) {
+          current = current.next.get(i);
+        }
+        // i is the index/level that update
+        update.set(i, current);
+      }
+      // current is now pointing to the element before the position we are about to set
+      // at bottom level.
+      // CASE 1: We found an element with matched key, there is a next
+      if (current.next.get(0) != null
+          && this.comparator.compare(current.next.get(0).key, key) == 0) {
+        current = current.next.get(0);
+        V val = current.value;
+        current.value = value;
+        // return previous value of node
+        return val;
+      } else {
+        // Case 2: We INSERTED a new element
+        // increment size
+        this.size++;
+        // generate new height
+        int newHeight = randomHeight();
+        // create the first columns of listHeaders at new levels
+        if (newHeight > this.height) {
+          for (int i = this.height; i < newHeight; i++) {
+            update.set(i, listHeader);
+          }
+        }
+        this.height = newHeight;
+        SLNode<K, V> newNode = new SLNode<K, V>(key, value, newHeight);
+        for (int i = 0; i < newHeight; i++) {
+          // connect newNode next fields with update next pointers
+          newNode.next.set(i, update.get(i).next.get(i));
+          // setting the next pointer of current (but all levels) to new Node
+          update.get(i).next.set(i, newNode);
         }
       }
     }
+
     return null;
   } // set(K,V)
 
@@ -212,9 +260,71 @@ public class SkipList<K, V> implements SimpleMap<K, V> {
   /**
    * Dump the tree to some output location.
    */
+
+
   public void dump(PrintWriter pen) {
-    // Forthcoming
+    String leading = "          ";
+
+    SLNode<K, V> current = front.get(0);
+
+    // Print some X's at the start
+    pen.print(leading);
+    for (int level = 0; level < this.height; level++) {
+      pen.print(" X");
+    } // for
+    pen.println();
+    printLinks(pen, leading);
+
+    while (current != null) {
+      // Print out the key as a fixed-width field.
+      // (There's probably a better way to do this.)
+      String str;
+      if (current.key == null) {
+        str = "<null>";
+      } else {
+        str = current.key.toString();
+      } // if/else
+      if (str.length() < leading.length()) {
+        pen.print(leading.substring(str.length()) + str);
+      } else {
+        pen.print(str.substring(0, leading.length()));
+      } // if/else
+
+      // Print an indication for the links it has.
+      for (int level = 0; level < current.next.size(); level++) {
+       pen.print(" " + current.value + " ");
+        pen.print("-*");
+      } // for
+      // Print an indication for the links it lacks.
+      for (int level = current.next.size(); level < this.height; level++) {
+        pen.print(" |");
+      } // for
+      pen.println();
+      printLinks(pen, leading);
+
+      current = current.next.get(0);
+    } // while
+
+    // Print some O's at the start
+    pen.print(leading);
+    for (int level = 0; level < this.height; level++) {
+      pen.print(" O");
+    } // for
+    pen.println();
+
   } // dump(PrintWriter)
+
+  /**
+   * Print some links (for dump).
+   */
+  void printLinks(PrintWriter pen, String leading) {
+    pen.print(leading);
+    for (int level = 0; level < this.height; level++) {
+      pen.print(" |");
+    } // for
+    pen.println();
+  } // printLinks
+
 
   // +---------+-----------------------------------------------------
   // | Helpers |
@@ -309,5 +419,6 @@ class SLNode<K, V> {
   // +---------+-----------------------------------------------------
   // | Methods |
   // +---------+
+
 
 } // SLNode<K,V>
