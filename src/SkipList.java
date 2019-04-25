@@ -198,19 +198,6 @@ public class SkipList<K, V> implements SimpleMap<K, V> {
     } catch (Exception e) {
       return false;
     }
-
-    /*
-     * if (key == null) { throw new NullPointerException("Inavlid key is null"); } // if
-     * 
-     * if (this.height == 0) { throw new IndexOutOfBoundsException("The key was not found."); }
-     * SLNode<K, V> current = this.front; // loop invariant: current.key < key for (int i =
-     * this.height - 1; i >= 0; i--) { while ( current.next.get(i) != null &&
-     * this.comparator.compare(current.next.get(i).key, key) < 0) { current = current.next.get(i); }
-     * Determine if a key appears in the table } // we reach bottom level and should be in front of
-     * the element that we are searching current = current.next.get(0); // if key of next element
-     * matches search key, return true if (this.comparator.compare(current.key, key) == 0) { return
-     * true; } return false;
-     */
   } // containsKey(K)
 
   @SuppressWarnings("unchecked")
@@ -264,34 +251,6 @@ public class SkipList<K, V> implements SimpleMap<K, V> {
       }
       return toDelete.value;
     }
-
-    /*
-     * SLNode<K,V> newNode = new SLNode<K,V>(key, value, randomHeight()); this.size++; this.height =
-     * Math.max(newNode.getHeight(), this.height);
-     * 
-     * // Wire old nodes with new node for(int i = 0; i < newNode.getHeight(); i++) {
-     * if(updatePointers.get(i) == null) { dummy.setNext(i, newNode); } else { newNode.setNext(i,
-     * updatePointers.get(i).next(i)); updatePointers.get(i).setNext(i, newNode); } }
-     */
-
-    /*
-     * if (key == null) { throw new NullPointerException("null key"); }
-     * 
-     * if (this.front().get(0) == null) { return null; }
-     * 
-     * ArrayList<SLNode<K, V>> nodeList = (ArrayList<SLNode<K, V>>) front().clone(); SLNode<K, V>
-     * current = null; for (int currHeight = this.height - 1; currHeight >= 0; currHeight--) {
-     * current = nodeList.get(currHeight); while (current.next.get(currHeight) != null &&
-     * this.comparator.compare(key, current.next.get(currHeight).key) < 0) { current =
-     * current.next.get(currHeight); } nodeList.set(currHeight, current); }
-     * 
-     * if (current.next.get(0) == null || this.comparator.compare(current.next.get(0).key, key) > 0)
-     * { return null; } else { V toReturn = null; for (int i = 0; i < this.height; i++) { if
-     * (nodeList.get(i) != null) { if (nodeList.get(i).key.equals(key)) { toReturn =
-     * nodeList.get(i).value; this.front().set(i, nodeList.get(i).next.get(i)); } else { toReturn =
-     * nodeList.get(i).next.get(i).value; nodeList.get(i).next.set(i,
-     * nodeList.get(i).next.get(i).next.get(i)); } } } return toReturn; }
-     */
   } // remove(K)
 
   @Override
