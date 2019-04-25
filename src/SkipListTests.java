@@ -1,8 +1,10 @@
+
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Random;
 import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.Test;
 import org.junit.jupiter.api.BeforeEach;
 
@@ -20,16 +22,15 @@ public class SkipListTests {
   /**
    * Names of some numbers.
    */
-  static final String numbers[] =
-      {"zero", "one", "two", "three", "four", "five", "six", "seven", "eight",
-          "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen",
-          "sixteen", "seventeen", "eighteen", "nineteen"};
+  static final String numbers[] = {"zero", "one", "two", "three", "four", "five", "six", "seven",
+      "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen",
+      "seventeen", "eighteen", "nineteen"};
 
   /**
    * Names of more numbers.
    */
-  static final String tens[] = {"", "", "twenty", "thirty", "forty", "fifty",
-      "sixty", "seventy", "eighty", "ninety"};
+  static final String tens[] =
+      {"", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"};
 
   // +--------+----------------------------------------------------------
   // | Fields |
@@ -62,23 +63,22 @@ public class SkipListTests {
   // +---------+
 
   /**
-   * Set up everything.  Unfortunately, @BeforeEach doesn't seem
-   * to be working, so we do this manually.
+   * Set up everything. Unfortunately, @BeforeEach doesn't seem to be working, so we do this
+   * manually.
    */
   @BeforeEach
   public void setup() {
     this.ints = new SkipList<Integer, String>((i, j) -> i - j);
     this.strings = new SkipList<String, String>((s, t) -> s.compareTo(t));
     this.operations = new ArrayList<String>();
-    System.err.println("SETUP");
   } // setup
 
   /**
    * Dump a SkipList to stderr.
    */
-  static <K,V> void dump(SkipList<K,V> map) {
+  static <K, V> void dump(SkipList<K, V> map) {
     System.err.print("[");
-    map.forEach((key,value) -> System.err.println(key + ":" + value + " "));
+    map.forEach((key, value) -> System.err.println(key + ":" + value + " "));
     System.err.println("]");
   } // dump
 
@@ -146,20 +146,20 @@ public class SkipListTests {
   // +--------------------+
 
   /**
-   * Add an integer to the ints list.
+   * Set an entry in the ints list.
    */
   void set(Integer i) {
     operations.add("set(" + i + ");");
     ints.set(i, value(i));
-  } // add
+  } // set(Integer)
 
   /**
-   * Add a string to the strings list.
+   * Set an entry in the strings list.
    */
   void set(String str) {
     operations.add("set(\"" + str + "\");");
     strings.set(str, value(str));
-  } // add(String)
+  } // set(String)
 
   /**
    * Remove an integer from the ints list.
@@ -172,7 +172,7 @@ public class SkipListTests {
   /**
    * Remove a string from the strings list.
    */
-  void add(String str) {
+  void remove(String str) {
     operations.add("remove(\"" + str + "\");");
     strings.remove(str);
   } // remove(String)
@@ -203,7 +203,7 @@ public class SkipListTests {
   // +-------------+
 
   /**
-   * A really simple test.  Add an element and make sure that it's there.
+   * A really simple test. Add an element and make sure that it's there.
    */
   @Test
   public void simpleTest() {
@@ -290,7 +290,7 @@ public class SkipListTests {
           set(rand);
         } // if it's not already there.
         if (!ints.containsKey(rand)) {
-          log("After adding " + rand + ", contains(" + rand +") fails");
+          log("After adding " + rand + ", contains(" + rand + ") fails");
           ok = false;
         } // if (!ints.contains(rand))
       } // if we add
@@ -299,7 +299,7 @@ public class SkipListTests {
         remove(rand);
         keys.remove((Integer) rand);
         if (ints.containsKey(rand)) {
-          log("After removing " + rand + ", contains(" + rand +") succeeds");
+          log("After removing " + rand + ", contains(" + rand + ") succeeds");
           ok = false;
         } // if ints.contains(rand)
       } // if we remove
@@ -319,9 +319,59 @@ public class SkipListTests {
       fail("Operations failed");
     } // if (!ok)
   } // randomTest()
+
+  @Test
+  public void removeTestInts() {
+    setup();
+    // remove empty list
+    assertEquals(null, ints.remove(8));
+
+    // Remove from back empty
+    for (int i = 0; i < 20; i++) {
+      set(i);
+    }
+    for (int i = 19; i >= 0; i--) {
+      assertEquals(ints.remove(i), numbers[i]);
+    }
+    // Remove from front until empty
+    for (int i = 0; i < 20; i++) {
+      set(i);
+    }
+    for (int i = 0; i < 20; i++) {
+      assertEquals(ints.remove(i), numbers[i]);
+    }
+
+    // Remove from middle
+    for (int i = 0; i < 20; i++) {
+      set(i);
+    }
+    for (int i = 10; i >= 5; i--) {
+      assertEquals(ints.remove(i), numbers[i]);
+    }
+  }
+
+  // test for set
+  // set when it is empty
+  // set element in the front in a row
+  // set in the end
+  // set in the middle
+  
+  // test for get
+  // get element when list is empty
+  // get when list is unempty
+  // get element not in the list
+  // how do we assert exception ?
+  
+  
+  
+  
+  
+  
+  
   
   public static void main(String[] args) {
     SkipListTests slt = new SkipListTests();
+
     slt.setup();
     slt.simpleTest();
   } // main
