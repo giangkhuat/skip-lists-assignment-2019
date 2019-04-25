@@ -131,21 +131,22 @@ public class SkipList<K, V> implements SimpleMap<K, V> {
           finger = finger.next(level);
         }
 
-        // we found a matched element (next != null)
+        // going down level when not found a match or cant keep going (next = null)
         if (finger.next(level) != null && key.equals(finger.next(level).key)) {
           V returnValue = finger.next(level).value;
           finger.next(level).value = value;
           return returnValue;
         } else {
-          // if we change level, we add temp to update Pointer
+          // if we change level, we add finger to update 
           update.set(level, finger);
         }
       }
 
       SLNode<K, V> newNode = new SLNode<K, V>(key, value, randomHeight());
       this.size++;
-      this.height = Math.max(newNode.getHeight(), this.height);
-
+      if (newNode.getHeight() > this.height) {
+        this.height = newNode.getHeight();
+      }
       // Wire old nodes with new node
       for (int i = 0; i < newNode.getHeight(); i++) {
         if (update.get(i) == null) {
