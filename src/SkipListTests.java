@@ -5,8 +5,10 @@ import java.util.Iterator;
 import java.util.Random;
 import static org.junit.Assert.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.Test;
 import org.junit.jupiter.api.BeforeEach;
+import java.lang.*;
 
 /**
  * Some tests of skip lists.
@@ -321,7 +323,7 @@ public class SkipListTests {
   } // randomTest()
 
   @Test
-  public void removeTestInts() {
+  public void removeDifferentPositions() {
     setup();
     // remove empty list
     assertEquals(null, ints.remove(8));
@@ -355,24 +357,183 @@ public class SkipListTests {
   // set element in the front in a row
   // set in the end
   // set in the middle
-  
+
+  @Test
+  public void testSetAtfront() {
+    setup();
+
+    // set when list is empty
+    set(0);
+    assertTrue(ints.containsKey(0));
+    set("banana");
+    assertTrue(strings.containsKey("banana"));
+
+    // remove with one element
+    ints.remove(0);
+
+    // Test whether set throws Exception
+    assertThrows(NullPointerException.class, () -> ints.get(null));
+
+    // insert elements precede first element in list
+    for (int i = 10; i < 20; i++) {
+      set(i);
+    }
+    // these numbers should precede the above ones
+    for (int i = 0; i < 10; i++) {
+      set(i);
+    }
+
+    for (int i = 0; i < 20; i++) {
+      assertEquals(ints.get(i), numbers[i]);
+    }
+  }
+
+  // Testing set function to insert at the end of the list
+  @Test
+  public void testSetandOverwrite() {
+    setup();
+    // insert elements
+    for (int i = 0; i < 100; i++) {
+      set(i);
+    }
+    // insert and overwrite elements
+    for (int i = 0; i < 200; i++) {
+      set(i);
+    }
+    // check if all the values matched their keys to see if the list is in order
+    for (int i = 0; i < 200; i++) {
+      assertEquals(ints.get(i), value(i));
+    }
+  }
+
+  // Test remove and then insert elements
+  @Test
+  public void testRemoveThenInsert() {
+    setup();
+    for (int i = 0; i < 200; i++) {
+      set(i);
+    }
+    // remove then insert at different positions
+    for (int i = 0; i < 200; i++) {
+      if (i % 2 == 0) {
+        ints.remove(Integer.valueOf(i));
+      }
+    }
+    for (int i = 0; i < 200; i++) {
+      if (i % 2 == 0)
+        set(i);
+    }
+    for (int i = 0; i < 200; i++) {
+      assertEquals(ints.get(i), value(i));
+    }
+
+  }
+
+
+  @Test
+  public void testRemoveEmpty() {
+    setup();
+
+    // remove when list is empty
+    assertEquals(null, ints.remove(7));
+    // remove with invalid key
+    assertThrows(NullPointerException.class, () -> ints.remove(null));
+
+    // remove with key not in the list
+    set(9);
+    assertEquals(null, ints.remove(7));
+    remove(9);
+
+    // test list is empty
+    assertEquals(0, ints.size);
+  }
+
+
   // test for get
   // get element when list is empty
   // get when list is unempty
   // get element not in the list
   // how do we assert exception ?
-  
-  
-  
-  
-  
-  
-  
-  
+
+  @Test
+  public void testGetExceptions() {
+    setup();
+    // Test get with null key
+    assertThrows(NullPointerException.class, () -> ints.get(null));
+    // Test get with key not in the list
+    assertThrows(IndexOutOfBoundsException.class, () -> ints.get(7));
+    set(5);
+    // Test get with key not in the list
+    assertThrows(IndexOutOfBoundsException.class, () -> ints.get(7));
+
+
+  }
+
+  @Test
+  public void testGet() {
+    setup();
+    // get with one element
+    ints.set(1, "hello");
+    assertEquals("hello", ints.get(1));
+
+    // get with more elements
+    for (int i = 0; i < 20; i++) {
+      set(i);
+    }
+    assertEquals(ints.get(5), numbers[5]);
+    // last element
+    assertEquals(ints.get(19), numbers[19]);
+
+
+  }
+
+  @Test
+  public void testBigArray() {
+    setup();
+    int n = 1;
+    while (n < 10) {
+      // inserting elements
+      for (int i = 0; i < Math.pow(2, n); i++) {
+        set(i);
+      }
+      // checking everything in order
+      for (int i = 0; i < Math.pow(2, n); i++) {
+        assertEquals(ints.get(i), value(i));
+      }
+      // removing elements
+      for (int i = 0; i < Math.pow(2, n); i++) {
+        assertEquals(value(i), ints.remove(i));
+      }
+      n++;
+    }
+    // check list is empty
+    assertEquals(ints.size, 0);
+  }
+
+
   public static void main(String[] args) {
     SkipListTests slt = new SkipListTests();
 
     slt.setup();
+
     slt.simpleTest();
+
+
+    SkipList<Integer, Integer> sl = new SkipList<Integer, Integer>();
+    for (int i = 1; i < 1000; i++) {
+      sl.set(i, i);
+      sl.get(i);
+      System.out.println(sl.getCounter);
+    }
+
+    SkipList<Integer, Integer> slr = new SkipList<Integer, Integer>();
+    for (int i = 1; i < 1000; i++) {
+      slr.set(i, i);
+      slr.remove(i);
+      slr.set(i, i);
+      System.out.println(slr.removeCounter);
+    }
+
+
   } // main
 } // class SkipListTests

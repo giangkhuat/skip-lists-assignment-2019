@@ -46,9 +46,11 @@ public class SkipList<K, V> implements SimpleMap<K, V> {
    */
   int size;
   /**
-   * The number of steps
+   * The number of steps get, set and remove take
    */
-  public int stepNum;
+  public int getCounter;
+  public int setCounter;
+  public int removeCounter;
 
   /**
    * Current height / Current heighest level in list
@@ -82,6 +84,10 @@ public class SkipList<K, V> implements SimpleMap<K, V> {
     this.comparator = comparator;
     this.size = 0;
     this.height = INITIAL_HEIGHT;
+    getCounter = 0;
+    setCounter = 0;
+    removeCounter = 0;
+
   } // SkipList(Comparator<K>)
 
   /**
@@ -98,6 +104,7 @@ public class SkipList<K, V> implements SimpleMap<K, V> {
   @Override
   @SuppressWarnings("unchecked")
   public V set(K key, V value) {
+    this.setCounter = 0;
     // if key is null, throw exception
     if (key == null) {
       throw new NullPointerException("null key");
@@ -133,36 +140,27 @@ public class SkipList<K, V> implements SimpleMap<K, V> {
       // level starts from height - 1 to 0
       // Case 2A: Check if Node with key exists
       for (int level = this.height - 1; level >= 0; level--) {
-        // iterating while current != null
-        // next node after current at level != null
-        // next node's key precedes current key
+        // iterating while current != null, next node after current at level != null
         while (finger != null && finger.next(level) != null
             && precede(finger.next(level).key, key)) {
           finger = finger.next(level);
+          this.setCounter++;
         }
 
-
-        // going down level when not found a match or cant keep going (next = null)
-        // we found a matched element (next != null) and key matched finger.next(level).key
+        // if we found a matched element
         if (finger.next(level) != null && key.equals(finger.next(level).key)) {
           V returnValue = finger.next(level).value;
           finger.next(level).value = value;
           return returnValue;
         } else {
-
-          // if we change level, we add finger to update
-
-          // change level, we add previous pointers to update
+          // going down level when not found a match or cant keep going (next = null)
           update.set(level, finger);
+          this.setCounter++;
         }
       }
       // Case 2B: no key existed, insert a new element
       SLNode<K, V> newNode = new SLNode<K, V>(key, value, randomHeight());
       this.size++;
-
-      if (newNode.getHeight() > this.height) {
-        this.height = newNode.getHeight();
-      }
 
       // update skip list's height
       if (newNode.getHeight() > this.height) {
@@ -184,6 +182,7 @@ public class SkipList<K, V> implements SimpleMap<K, V> {
 
   @Override
   public V get(K key) {
+    this.getCounter = 0;
     if (this.height == 0) {
       throw new IndexOutOfBoundsException("The key was not found.");
     }
@@ -194,11 +193,13 @@ public class SkipList<K, V> implements SimpleMap<K, V> {
     for (int level = this.height - 1; level >= 0; level--) {
       while (finger.next(level) != null && precede(finger.next(level).key, key)) {
         finger = finger.next(level);
+        this.getCounter++;
       }
 
       if (finger.next(level) != null && finger.next(level).key.equals(key)) {
         return finger.next(level).value;
       }
+      this.getCounter++;
     }
     // break out of the loop, we reached the bottom, key is not in the list
     throw new IndexOutOfBoundsException("The key was not found.");
@@ -222,6 +223,7 @@ public class SkipList<K, V> implements SimpleMap<K, V> {
   @SuppressWarnings("unchecked")
   @Override
   public V remove(K key) {
+    this.removeCounter = 0;
     // if key == null, throw exception
     if (key == null) {
       throw new NullPointerException("null key");
@@ -235,13 +237,16 @@ public class SkipList<K, V> implements SimpleMap<K, V> {
     // update is front.next.clone() to have the same size
     ArrayList<SLNode<K, V>> update = (ArrayList<SLNode<K, V>>) this.front.next.clone();
     SLNode<K, V> temp = this.front;
+
     // check from top level to bottom
     for (int level = this.height - 1; level >= 0; level--) {
       while (temp != null && temp.next(level) != null && precede(temp.next(level).key, key)) {
         temp = temp.next(level);
+        this.removeCounter++;
       }
       // putting previous pointers in update when we go down one level
       update.set(level, temp);
+      this.removeCounter++;
     }
 
     // Case 2A: No matched key, return null
@@ -249,29 +254,26 @@ public class SkipList<K, V> implements SimpleMap<K, V> {
       return null;
     } else {
       // Case 2B: deleting node with key
-      SLNode<K, V> toDelete = temp.next(0);
+      SLNode<K, V> removeNode = temp.next(0);
       this.size--;
       // save the height of the deleted node before we delete that node.
-      int oldHeight = temp.next(0).getHeight();
-      for (int i = 0; i < oldHeight; i++) {
-        // wire things together
-        if (update.get(i) == toDelete) {
-          // wire dummy to whatever behind deleted node;
+      int removeNodeHeight = temp.next(0).getHeight();
+      for (int i = 0; i < removeNodeHeight; i++) {
+        if (update.get(i) == removeNode) {
           this.front.setNext(i, update.get(i).next(i).next(i));
         } else {
           update.get(i).setNext(i, update.get(i).next(i).next(i));
         }
       }
 
-      if (oldHeight >= this.height) {
+      if (removeNodeHeight >= this.height) {
         int newHeight = 0;
-
         while (newHeight <= INITIAL_HEIGHT && this.front.next(newHeight) != null) {
           newHeight++;
         }
         this.height = newHeight;
       }
-      return toDelete.value;
+      return removeNode.value;
     }
   } // remove(K)
 
@@ -333,6 +335,13 @@ public class SkipList<K, V> implements SimpleMap<K, V> {
   // +----------------------+----------------------------------------
   // | Other public methods |
   // +----------------------+
+
+  /**
+   * Method to log the number of times we traverse horizontally and call next
+   */
+  public void logNext() {
+
+  }
 
   /**
    * Dump the tree to some output location.
@@ -503,7 +512,6 @@ class SLNode<K, V> {
   public SLNode(K key, V value, int n) {
     this.key = key;
     this.value = value;
-    int step = SkipList.this.stepNum;
     this.next = new ArrayList<SLNode<K, V>>(n);
     for (int i = 0; i < n; i++) {
       this.next.add(null);
@@ -515,7 +523,7 @@ class SLNode<K, V> {
   // +---------+
   /* Taken from Sam Rebelsky's Eboard */
   public SLNode<K, V> next(int i) {
-    
+
     return this.next.get(i);
   }
 
