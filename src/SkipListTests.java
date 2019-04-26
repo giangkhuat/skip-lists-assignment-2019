@@ -14,6 +14,9 @@ import java.lang.*;
  * Some tests of skip lists.
  *
  * @author Samuel A. Rebelsky
+ * Giang Khuat
+ * Henry Firestone
+ * Par 3's analysis is included in main below the extra tests 
  */
 public class SkipListTests {
 
@@ -510,7 +513,24 @@ public class SkipListTests {
     assertEquals(ints.size, 0);
   }
 
-
+/**
+ * Get help from Sam Rebelsky when we tried to print out results of different sizes
+ * 
+ * Experiment: 
+ *     * Description: We create a for loop to initialize list with different sizes
+ *     In each for loop, we initialize list with certain size. We use the inner for loop to set elements. Then we try set an element
+ *     and call get or set and print out how many times setCounters/ getCounters/removeCounters were called. We reset all those counter inside the procedures.
+ * Result explanation: 
+ *     
+ *     * We printed out the values of getCounter, removeCounter and setCounter and calculated Counter/log2(size) for each counter. 
+ * This value is less than 4 for all of the counters. Therefore the number of operations is less than 4log2(size), and since 4 is constant, O(n) = log2(n) 
+ * for all our operations. It makes sense that our algorithm is slightly bigger than log2(n) because there will be a constant amount 
+ * of level changes regardless of size.
+ * 
+ * Our data is attached:
+ *      * https://docs.google.com/spreadsheets/d/1rZ7UJOYjovWjcNonbjNuqwHlYIx8EVME1GFxAK4q2QM/edit?usp=sharing 
+ * 
+ */
   public static void main(String[] args) {
     SkipListTests slt = new SkipListTests();
 
@@ -520,64 +540,19 @@ public class SkipListTests {
 
 
     SkipList<Integer, Integer> sl = new SkipList<Integer, Integer>();
-    for (int size = 1; size < 2000; size *= 2) {
-      sl = new SkipList<Integer,Integer>();
+    for (int size = 1; size < 200000; size = size + 100) {
+      sl = new SkipList<Integer, Integer>();
       for (int i = 0; i < size; i++) {
-        sl.set(i,i);
+        sl.set(i, i);
       } // for
-      sl.set(size/2,size/2);
-      sl.get(size/2);
-      System.out.println( "List " + i + " elements. setCounter = " + sl.setCounter);
-      System.out.println("List " + i + " elements. GetCounter = " + sl.getCounter);
+      sl.set(size / 2, size / 2);
+      // sl.get(size / 2);
+      sl.remove(size / 2);
+      // System.out.println(sl.setCounter);
+      // System.out.println(sl.getCounter);
+      System.out.println(sl.removeCounter);
+
     }
-
-    System.out.println("Finish printing getCounter");
-    SkipList<Integer, Integer> slr = new SkipList<Integer, Integer>();
-    for (int i = 1; i < 1000; i++) {
-      slr.set(i, i);
-      slr.remove(i);
-      slr.set(i, i);
-      System.out.println("List size " + i + " removeCounter = " + slr.removeCounter);
-    }
-
-    /*
-     *
-List 1 elements. setCounter = 0
-List 1 elements. GetCounter = 12
-List 2 elements. setCounter = 17
-List 2 elements. GetCounter = 11
-List 4 elements. setCounter = 17
-List 4 elements. GetCounter = 9
-List 8 elements. setCounter = 17
-List 8 elements. GetCounter = 16
-List 16 elements. setCounter = 17
-List 16 elements. GetCounter = 16
-List 32 elements. setCounter = 17
-List 32 elements. GetCounter = 15
-List 64 elements. setCounter = 17
-List 64 elements. GetCounter = 14
-List 128 elements. setCounter = 17
-List 128 elements. GetCounter = 16
-List 256 elements. setCounter = 17
-List 256 elements. GetCounter = 15
-List 512 elements. setCounter = 17
-List 512 elements. GetCounter = 16
-Finish printing getCounter
-List size 1 removeCounter = 16
-List size 2 removeCounter = 17
-List size 4 removeCounter = 17
-List size 8 removeCounter = 17
-List size 16 removeCounter = 17
-List size 32 removeCounter = 17
-List size 64 removeCounter = 17
-List size 128 removeCounter = 17
-List size 256 removeCounter = 17
-List size 512 removeCounter = 17
-
-
-
-     */
-
-
+    System.out.println("Done");
   } // main
 } // class SkipListTests
