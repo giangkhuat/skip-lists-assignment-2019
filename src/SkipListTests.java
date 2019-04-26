@@ -520,19 +520,59 @@ public class SkipListTests {
 
 
     SkipList<Integer, Integer> sl = new SkipList<Integer, Integer>();
-    for (int i = 1; i < 1000; i++) {
+    for (int i = 1; i < 1000; i = i * 2) {
       sl.set(i, i);
       sl.get(i);
-      System.out.println(sl.getCounter);
+      System.out.println( "List " + i + " elements. setCounter = " + sl.setCounter);
+      System.out.println("List " + i + " elements. GetCounter = " + sl.getCounter);
     }
 
+    System.out.println("Finish printing getCounter");
     SkipList<Integer, Integer> slr = new SkipList<Integer, Integer>();
-    for (int i = 1; i < 1000; i++) {
+    for (int i = 1; i < 1000; i = i * 2) {
       slr.set(i, i);
       slr.remove(i);
       slr.set(i, i);
-      System.out.println(slr.removeCounter);
+      System.out.println("List size " + i + " removeCounter = " + slr.removeCounter);
     }
+
+    /*
+     *
+List 1 elements. setCounter = 0
+List 1 elements. GetCounter = 12
+List 2 elements. setCounter = 17
+List 2 elements. GetCounter = 11
+List 4 elements. setCounter = 17
+List 4 elements. GetCounter = 9
+List 8 elements. setCounter = 17
+List 8 elements. GetCounter = 16
+List 16 elements. setCounter = 17
+List 16 elements. GetCounter = 16
+List 32 elements. setCounter = 17
+List 32 elements. GetCounter = 15
+List 64 elements. setCounter = 17
+List 64 elements. GetCounter = 14
+List 128 elements. setCounter = 17
+List 128 elements. GetCounter = 16
+List 256 elements. setCounter = 17
+List 256 elements. GetCounter = 15
+List 512 elements. setCounter = 17
+List 512 elements. GetCounter = 16
+Finish printing getCounter
+List size 1 removeCounter = 16
+List size 2 removeCounter = 17
+List size 4 removeCounter = 17
+List size 8 removeCounter = 17
+List size 16 removeCounter = 17
+List size 32 removeCounter = 17
+List size 64 removeCounter = 17
+List size 128 removeCounter = 17
+List size 256 removeCounter = 17
+List size 512 removeCounter = 17
+
+
+
+     */
 
 
   } // main
