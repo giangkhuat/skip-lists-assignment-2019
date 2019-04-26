@@ -520,16 +520,20 @@ public class SkipListTests {
 
 
     SkipList<Integer, Integer> sl = new SkipList<Integer, Integer>();
-    for (int i = 1; i < 1000; i = i * 2) {
-      sl.set(i, i);
-      sl.get(i);
+    for (int size = 1; size < 2000; size *= 2) {
+      sl = new SkipList<Integer,Integer>();
+      for (int i = 0; i < size; i++) {
+        sl.set(i,i);
+      } // for
+      sl.set(size/2,size/2);
+      sl.get(size/2);
       System.out.println( "List " + i + " elements. setCounter = " + sl.setCounter);
       System.out.println("List " + i + " elements. GetCounter = " + sl.getCounter);
     }
 
     System.out.println("Finish printing getCounter");
     SkipList<Integer, Integer> slr = new SkipList<Integer, Integer>();
-    for (int i = 1; i < 1000; i = i * 2) {
+    for (int i = 1; i < 1000; i++) {
       slr.set(i, i);
       slr.remove(i);
       slr.set(i, i);
